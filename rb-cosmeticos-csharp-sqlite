@@ -1,0 +1,76 @@
+//Classe de Conexão com SQLite – Database.cs
+using System;
+using System.Data;
+using System.Data.SQLite;
+using System.Windows.Forms;
+public void CriarBancoETabela()
+{
+    using (SQLiteConnection conn = Database.GetConnection())
+    {
+        string sql = "CREATE TABLE IF NOT EXISTS produtos (" +
+                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                     "nome TEXT NOT NULL, " +
+                     "preco REAL NOT NULL, " +
+                     "quantidade INTEGER NOT NULL)";
+
+        SQLiteCommand cmd = new SQLiteCommand(sql, conn);
+        cmd.ExecuteNonQuery();
+    }
+}
+public void InserirProduto(string nome, double preco, int quantidade)
+{
+    using (SQLiteConnection conn = Database.GetConnection())
+    {
+        string sql = "INSERT INTO produtos (nome, preco, quantidade) VALUES (@nome, @preco, @quantidade)";
+        SQLiteCommand cmd = new SQLiteCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@nome", nome);
+        cmd.Parameters.AddWithValue("@preco", preco);
+        cmd.Parameters.AddWithValue("@quantidade", quantidade);
+        cmd.ExecuteNonQuery();
+    }
+}
+public DataTable ListarProdutos()
+{
+    using (SQLiteConnection conn = Database.GetConnection())
+    {
+        string sql = "SELECT * FROM produtos";
+        SQLiteDataAdapter adapter = new SQLiteDataAdapter(sql, conn);
+        DataTable tabela = new DataTable();
+        adapter.Fill(tabela);
+        return tabela;
+    }
+}
+
+//Atualizar o DataGridView
+
+public void AtualizarTabela()
+{
+    dgvProdutos.DataSource = ListarProdutos();
+}
+
+// Evento de Carregamento do Formulário Form1_Load
+
+private void Form1_Load(object sender, EventArgs e)
+{
+    CriarBancoETabela();
+    AtualizarTabela();
+}
+// private void Form1_Load(object sender, EventArgs e)
+{
+    CriarBancoETabela();
+    AtualizarTabela();
+}
+
+//Código do Botão “Cadastrar”
+
+private void btnCadastrar_Click(object sender, EventArgs e)
+{
+    string nome = txtProduto.Text;
+    double preco = Convert.ToDouble(txtPreco.Text);
+    int quantidade = Convert.ToInt32(txtQuantidade.Text);
+
+    InserirProduto(nome, preco, quantidade);
+    AtualizarTabela();
+
+    MessageBox.Show("Produto cadastrado com sucesso!");
+}
